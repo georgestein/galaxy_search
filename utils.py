@@ -37,7 +37,7 @@ def angular_separation(ra1, dec1, ra2, dec2):
 
 
 def calculate_similarity_faiss(rep, query_ind, metric='IP', nnearest=10):
-    import faiss
+    #import faiss
 
     """
     Uses Facebook's Faiss library. Has the option to reduce dimensionality
