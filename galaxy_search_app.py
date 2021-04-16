@@ -172,16 +172,7 @@ class Catalogue:
         self.similar_inds = self.similar_inds[:nnearest]
         self.similarity_score = self.similarity_score[:nnearest]
 
-
-
-st.set_page_config(
-    page_title='Galaxy searcher',
-    page_icon='GEORGE',
-##    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-
+        
 def main():
 
     st.title("Welcome to Galaxy Finder")
@@ -219,13 +210,13 @@ def main():
             - To do this we used a type of machine learning called "self-supervised representation learning" to boil down each image into a concentrated vector of information, or `representation', that encapsulates the appearance and properties of the galaxy. 
             - For each galaxy image we create new versions by rotating it, adding noise, blurring it, etc., and we teach the machine to learn the same representation for all these versions of the same galaxy. In this way, we move beyond looking at pixel values, and teach the machine a deeper understanding of the image.
             - Once we have trained the machine learning model on millions of galaxies we calculate and save the representation of every image. Then, you tell us what galaxy to use as a starting point, we find the representation belonging to the image of that galaxy, compare it to millions of other representations from all the other galaxies, and return the most similar images!
-            - Please see our paper at https://arxiv.org/abs/2012.13083, or website at https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/ for more details on the method.
+            - Please see our [paper](https://arxiv.org/abs/2012.13083) or [website](https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/) for more details on the method.
             - Products here are just initial trials - we are working hard to create better models!
 
             What data we used:
-            - We used galaxy images from DECaLS dr9 https://www.legacysurvey.org/, randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
+            - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
 
-            Created by George Stein: https://github.com/georgestein
+            Created by [George Stein](https://github.com/georgestein)
             """
         )
 
@@ -282,7 +273,7 @@ def main():
     # Plot query image
     lab = 'Query galaxy: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
     st.subheader(lab)
-    st.image(urls[0], use_column_width='always')
+    st.image(urls[0], use_column_width='auto')
 
     st.subheader('Similar Galaxies')
     
@@ -326,6 +317,15 @@ def main():
     st.markdown(get_table_download_link(df), unsafe_allow_html=True)
         
     tend = time.time()
+
+
+st.set_page_config(
+    page_title='Galaxy searcher',
+    page_icon='GEORGE',
+##    layout="centered",
+    initial_sidebar_state="expanded",
+)
+
 
 if __name__ == '__main__':    
 
