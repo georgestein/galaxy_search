@@ -324,9 +324,9 @@ def main():
             similarity_catalogue_out[k] = v
             
     df = pd.DataFrame.from_dict(similarity_catalogue_out)
-    if st.checkbox('Show data table'):
+    #    if st.checkbox('Show data table'):
 
-        st.write(df)
+    st.write(df)
 
     #    download_csv = st.sidebar.button('Download data table as csv')
     #    if download_csv:
@@ -336,8 +336,8 @@ def main():
 
 
 st.set_page_config(
-    page_title='Galaxy searcher',
-    page_icon='GEORGE',
+    page_title='Galaxy Finder',
+##    page_icon='GEORGE',
 ##    layout="centered",
     initial_sidebar_state="expanded",
 )
