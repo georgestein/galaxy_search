@@ -22,19 +22,26 @@ class LoadCatalogue:
             self.data_loc = 'https://portal.nersc.gov/project/nyx/decals_self_supervised/streamlit_app_data/data/'
             self.data_loc_local = 'data/'
              
-    def get_local_or_url(self, file_in):
+    def get_local_or_url(self, file_in, check_fullsize=False, fullsize=None):
         """file_in can be either local destination or url"""
         if self.running_local:
+            fileinfo = os.stat(file_in)
+            print(fileinfo.st_size)
+
             return file_in
+
         else:
             filepath = os.path.join(self.data_loc_local, os.path.basename(file_in)) # take file name from url
-            if not os.path.exists(filepath):
-                lab = "Downloading {:s}... ".format(filepath)
-                if os.path.basename(file_in) == 'representations.npy':
-                    lab += 'This one may take a while (up to ~5 mins), please stand by!'
+            if not os.path.exists(filepath) or check_fullsize:
 
-                with st.spinner(lab):
-                    urllib.request.urlretrieve(file_in, filepath)
+                fileinfo = os.stat(file_in)
+                if fullsize != fileinfo.st_size:
+                    lab = "Downloading {:s}... ".format(filepath)
+                    if os.path.basename(file_in) == 'representations.npy':
+                        lab += 'This one may take a while (up to ~5 mins), please stand by!'
+
+                    with st.spinner(lab):
+                        urllib.request.urlretrieve(file_in, filepath)
 
             return filepath
             
@@ -71,7 +78,7 @@ class LoadCatalogue:
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
 
-        representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy')))
+        representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy'), check_fullsize=True, fullsize=1792000128))
 
         return representations
     
