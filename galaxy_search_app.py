@@ -35,7 +35,7 @@ class LoadCatalogue:
                 filesize_local = 0
 
                 if os.path.exists(filepath):
-                    filesize_local = fileinfo.st_size:
+                    filesize_local = fileinfo.st_size
 
                 if fullsize != filesize_local:
                     lab = "Downloading {:s}... ".format(filepath)
