@@ -247,11 +247,12 @@ def main():
             - For each galaxy image we create new versions by rotating it, adding noise, blurring it, etc., and we teach the machine to learn the same representation for all these versions of the same galaxy. In this way, we move beyond looking at pixel values, and teach the machine a deeper understanding of the image.
             - Once we have trained the machine learning model on millions of galaxies we calculate and save the representation of every image. Then, you tell us what galaxy to use as a starting point, we find the representation belonging to the image of that galaxy, compare it to millions of other representations from all the other galaxies, and return the most similar images!
             - Please see our [paper](https://arxiv.org/abs/2012.13083) or [website](https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/) for more details on the method.
-            - Products here are just initial trials for fun. We are working hard to create better models!
 
             What data we used:
             - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
             - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
+
+            Plesa note products here are just initial trials, with small models that fit within the memory limits of streamlit.
             
             Created by [George Stein](https://github.com/georgestein)
             """
@@ -289,7 +290,7 @@ def main():
             # ind_random = np.random.randint(0, rep.shape[0])
             # galaxies are sorted by brightness, so earlier ones are more interesting to look at
             # so sample with this in mind
-            ind_random = max(min(rep.shape[0]-1, int(np.random.lognormal(8., 3.))), 0)
+            ind_random = max(min(rep.shape[0]-1, int(np.random.lognormal(9., 3.))), 0)
             ra_search = cat['ra'][ind_random]
             dec_search = cat['dec'][ind_random]
 
@@ -367,3 +368,4 @@ st.set_page_config(
 if __name__ == '__main__':    
 
     main()
+
