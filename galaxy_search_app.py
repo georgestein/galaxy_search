@@ -81,7 +81,7 @@ class LoadCatalogue:
     # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# #(suppress_st_warning=True)
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
-        representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy'), check_fullsize=True, fullsize=1792000128))
+        representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy'), check_fullsize=True, fullsize=224000128))
 
         return representations
     
