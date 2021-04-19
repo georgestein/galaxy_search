@@ -190,10 +190,22 @@ class Catalogue:
 def main():
 
     st.title("Welcome to Galaxy Finder")
-    st.subheader("Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!")
-    st.write("")
-    st.write("Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at https://www.legacysurvey.org/viewer")
-    st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
+    #st.subheader("Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!")
+    #st.write("")
+    #st.write("Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at https://www.legacysurvey.org/viewer")
+    #st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
+    #st.write("Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.")
+
+    with st.beta_expander('Instructions'):
+        st.markdown(
+            """
+            **Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!**
+            
+            Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at [legacysurvey.org](https://www.legacysurvey.org/viewer)
+            - Use the south survey (select the <Legacy Surveys DR9-south images> option)
+            - Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
+            """
+        )
     tstart = time.time()
 
     #    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
@@ -252,7 +264,7 @@ def main():
             - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
             - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
 
-            Plesa note products here are just initial trials, with small models that fit within the memory limits of streamlit.
+            Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
             
             Created by [George Stein](https://github.com/georgestein)
             """
