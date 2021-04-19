@@ -51,6 +51,7 @@ class LoadCatalogue:
     # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
+    @st.cache(max_entries=1, allow_output_mutation=True, hash_funcs={dict: lambda _: None}, ttl=3600)# #(suppress_st_warning=True)
     def load_catalogue_coordinates(self, extra_features=False,
                                    features_extra=['flux', 'z_phot_median', 'brickid',
                                                    'inds', 'objid', 'source_type', 'ebv']):
@@ -75,9 +76,9 @@ class LoadCatalogue:
 
         return full_catalogue
 
-    # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
+    @st.cache(max_entries=1, allow_output_mutation=True, ttl=3600)# #(suppress_st_warning=True)
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
 
@@ -190,9 +191,9 @@ class Catalogue:
 def main():
 
     st.title("Welcome to Galaxy Finder")
-    st.header("Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!")
-    st.subheader("Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at https://www.legacysurvey.org/viewer")
+    st.subheader("Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!")
     st.write("")
+    st.write("Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at https://www.legacysurvey.org/viewer")
     st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
     tstart = time.time()
 
@@ -252,6 +253,7 @@ def main():
             What data we used:
             - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
             - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
+            
             Created by [George Stein](https://github.com/georgestein)
             """
         )
