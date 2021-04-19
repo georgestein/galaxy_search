@@ -38,7 +38,7 @@ class LoadCatalogue:
 
             return filepath
             
-    @st.cache #(suppress_st_warning=True)
+    @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
     def load_catalogue_coordinates(self, extra_features=False,
                                    features_extra=['flux', 'z_phot_median', 'brickid',
                                                    'inds', 'objid', 'source_type', 'ebv']):
@@ -63,7 +63,7 @@ class LoadCatalogue:
 
         return full_catalogue
 
-    @st.cache
+    @st.cache(allow_output_mutation=True)
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
 
