@@ -290,7 +290,13 @@ def main():
             # ind_random = np.random.randint(0, rep.shape[0])
             # galaxies are sorted by brightness, so earlier ones are more interesting to look at
             # so sample with this in mind
-            ind_random = max(min(rep.shape[0]-1, int(np.random.lognormal(9., 3.))), 0)
+
+            ind_min = 2500
+            ind_max = rep.shape[0]-1
+            ind_random = 0
+            while (ind_random < ind_min) or (ind_random > ind_max):
+                ind_random = int(np.random.lognormal(10., 2.))
+
             ra_search = cat['ra'][ind_random]
             dec_search = cat['dec'][ind_random]
 
