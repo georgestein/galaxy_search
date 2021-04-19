@@ -51,7 +51,7 @@ class LoadCatalogue:
     # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
-    @st.cache(max_entries=1, allow_output_mutation=True, hash_funcs={dict: lambda _: None}, ttl=3600)# #(suppress_st_warning=True)
+    @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600)#, hash_funcs={dict: lambda _: None})# 
     def load_catalogue_coordinates(self, extra_features=False,
                                    features_extra=['flux', 'z_phot_median', 'brickid',
                                                    'inds', 'objid', 'source_type', 'ebv']):
@@ -78,7 +78,7 @@ class LoadCatalogue:
 
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
-    @st.cache(max_entries=1, allow_output_mutation=True, ttl=3600)# #(suppress_st_warning=True)
+    @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600)# #(suppress_st_warning=True)
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
 
