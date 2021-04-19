@@ -25,6 +25,7 @@ class LoadCatalogue:
     def get_local_or_url(self, file_in, check_fullsize=False, fullsize=None):
         """file_in can be either local destination or url"""
         if self.running_local:
+
             return file_in
 
         else:
@@ -40,7 +41,7 @@ class LoadCatalogue:
                 if fullsize != filesize_local:
                     lab = "Downloading {:s}... ".format(filepath)
                     if os.path.basename(file_in) == 'representations.npy':
-                        lab += 'This one may take a while (up to ~5 mins), please stand by!'
+                        lab += 'This one may take a while (up to ~5 mins), please stand by!\nOnce downloaded subsequent runs will be fast'
 
                     with st.spinner(lab):
                         urllib.request.urlretrieve(file_in, filepath)
@@ -250,7 +251,7 @@ def main():
 
             What data we used:
             - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
-
+            - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
             Created by [George Stein](https://github.com/georgestein)
             """
         )
@@ -353,7 +354,6 @@ def main():
         st.markdown(get_table_download_link(df), unsafe_allow_html=True)
 
         tend = time.time()
-
 
 st.set_page_config(
     page_title='Galaxy Finder',
