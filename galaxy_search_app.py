@@ -141,7 +141,7 @@ class Catalogue:
         if self.query_distance > far_distance_npix*self.pixel_size:
             # notify of bad query
             st.write(('\nClosest galaxy in catalogue is quite far away from search point ({:.2f} degrees)\n'
-            'make sure to choose object in DECaLS dr9 footprint!\n'.format(self.query_distance)))
+                      'Either this galaxy is not yet in our database, or is not in the DECaLS dr9 footprint!\n'.format(self.query_distance)))
 
         del sep
 
@@ -202,7 +202,7 @@ def main():
             **Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!**
             
             Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at [legacysurvey.org](https://www.legacysurvey.org/viewer)
-            - Use the south survey (select the <Legacy Surveys DR9-south images> option)
+            - Use the south survey (select the <Legacy Surveys DR9-south images> option). Currently not all galaxies are included, but most bright ones should be.
             - Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
             """
         )
