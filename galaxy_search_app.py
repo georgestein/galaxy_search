@@ -31,10 +31,10 @@ class LoadCatalogue:
             filepath = os.path.join(self.data_loc_local, os.path.basename(file_in)) # take file name from url
             if not os.path.exists(filepath) or check_fullsize:
 
-                fileinfo = os.stat(filepath)
                 filesize_local = 0
 
                 if os.path.exists(filepath):
+                    fileinfo = os.stat(filepath)
                     filesize_local = fileinfo.st_size
 
                 if fullsize != filesize_local:
