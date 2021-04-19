@@ -25,16 +25,13 @@ class LoadCatalogue:
     def get_local_or_url(self, file_in, check_fullsize=False, fullsize=None):
         """file_in can be either local destination or url"""
         if self.running_local:
-            fileinfo = os.stat(file_in)
-            print(fileinfo.st_size)
-
             return file_in
 
         else:
             filepath = os.path.join(self.data_loc_local, os.path.basename(file_in)) # take file name from url
             if not os.path.exists(filepath) or check_fullsize:
 
-                fileinfo = os.stat(file_in)
+                fileinfo = os.stat(filepath)
                 if fullsize != fileinfo.st_size:
                     lab = "Downloading {:s}... ".format(filepath)
                     if os.path.basename(file_in) == 'representations.npy':
