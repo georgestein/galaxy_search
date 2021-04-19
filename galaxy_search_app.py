@@ -20,7 +20,7 @@ class LoadCatalogue:
 
         else:
             self.data_loc = 'https://portal.nersc.gov/project/nyx/decals_self_supervised/streamlit_app_data/data/'
-            self.data_loc_local = 'data_trial/'
+            self.data_loc_local = 'data/'
              
     def get_local_or_url(self, file_in):
         """file_in can be either local destination or url"""
@@ -126,7 +126,7 @@ class Catalogue:
         
         if self.query_distance > far_distance_npix*self.pixel_size:
             # notify of bad query
-            st.write(('\nClosest Galaxy in catalogue is quite far away from search point ({:.2f} degrees)\n'
+            st.write(('\nClosest galaxy in catalogue is quite far away from search point ({:.2f} degrees)\n'
             'make sure to choose object in DECaLS dr9 footprint!\n'.format(self.query_distance)))
 
         del sep
@@ -182,8 +182,24 @@ def main():
     st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
     tstart = time.time()
 
-    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
-    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
+#    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
+#    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
+
+    ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy (degrees or HH:MM:SS)", value='236.4355')
+    dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy (degrees or DD:MM:SS)", value='20.5603')
+
+    if ':' in ra_search:
+        # convert from weird astronomer units to useful ones (degrees)
+        HH, MM, SS = [float(i) for i in ra_search.split(':')]
+        ra_search = 360./24 * (HH + MM/60 + SS/3600)
+
+    if ':' in dec_search:
+        # convert from weird astronomer units to useful ones (degrees)
+        DD, MM, SS = [float(i) for i in dec_search.split(':')]
+        dec_search = DD/abs(DD) * (abs(DD) + MM/60 + SS/3600)
+
+    ra_search  = float(ra_search)
+    dec_search = float(dec_search)
 
     similarity_types = ['most similar', 'least similar']
     similarity_option = st.sidebar.selectbox(

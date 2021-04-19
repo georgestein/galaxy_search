@@ -111,7 +111,7 @@ def urls_from_coordinates(catalogue, pixscale=0.262, npix=256):
     urls = []
     url_head = 'https://www.legacysurvey.org/viewer/jpeg-cutout?'
     for i in range(catalogue['ra'].shape[0]):
-        urls += [url_head + 'ra={:.4f}&dec={:.4f}&size={:d}&layer=dr8-south&pixscale={:.3f}&bands=grz'.format(catalogue['ra'][i], catalogue['dec'][i], npix, pixscale)]
+        urls += [url_head + 'ra={:.4f}&dec={:.4f}&size={:d}&layer=ls-dr9-south&pixscale={:.3f}&bands=grz'.format(catalogue['ra'][i], catalogue['dec'][i], npix, pixscale)]
 
     return urls
 
