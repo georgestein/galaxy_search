@@ -182,9 +182,9 @@ def main():
     st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
     tstart = time.time()
 
-#    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
-#    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
-
+    #    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
+    #    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
+    
     ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy (degrees or HH:MM:SS)", value='236.4355')
     dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy (degrees or DD:MM:SS)", value='20.5603')
 
@@ -205,15 +205,21 @@ def main():
     similarity_option = st.sidebar.selectbox(
         'Want to see the most similar galaxies or the least similar?',
         similarity_types)
+    #similarity_option = st.sidebar.select_slider('Image size (pixels)', similarity_types)
+    
+    #    num_nearest = int(st.sidebar.text_input('Number of similar galaxies to display', key='num_nearest', help='Number of similar galaxies to display. Gets slow with a large number', value='16'))
 
-    num_nearest = int(st.sidebar.text_input('Number of similar galaxies to display', key='num_nearest', help='Number of similar galaxies to display. Gets slow with a large number', value='16'))
+    num_nearest_vals = [i**2 for i in range(4,11)]
+    num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
+
+    npix_types = [96, 152, 256]
+#    npix_show = st.sidebar.selectbox(
+#        'Image size (pixels)',
+#        npix_types)
+    npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[-1])
+
     num_nearest_download = int(st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe', value='100'))
     num_similar_query = max(num_nearest, num_nearest_download)
-
-    npix_types = [256, 152, 96]
-    npix_show = st.sidebar.selectbox(
-        'Image size (pixels)',
-        npix_types)
 
 
     with st.beta_expander('Interested in learning how this works?'):
@@ -263,76 +269,77 @@ def main():
     start_search = st.sidebar.button('Search query')
     start_search_random = st.sidebar.button('Search random galaxy')
 
-    if start_search_random:
-        # ind_random = np.random.randint(0, rep.shape[0])
-        # galaxies are sorted by brightness, so earlier ones are more interesting to look at
-        # so sample with this in mind
-        ind_random = max(min(rep.shape[0]-1, int(np.random.lognormal(8., 3.))), 0)
-        ra_search = cat['ra'][ind_random]
-        dec_search = cat['dec'][ind_random]
+    if start_search or start_search_random:
+        if start_search_random:
+            # ind_random = np.random.randint(0, rep.shape[0])
+            # galaxies are sorted by brightness, so earlier ones are more interesting to look at
+            # so sample with this in mind
+            ind_random = max(min(rep.shape[0]-1, int(np.random.lognormal(8., 3.))), 0)
+            ra_search = cat['ra'][ind_random]
+            dec_search = cat['dec'][ind_random]
 
-    # Find index of closest galaxy to search location. This galaxy becomes query
-    CAT.search_catalogue(ra_search, dec_search)
-    
-    # Find indexes of similar galaxies to query
-    st.write('Searching through {:,} galaxies to find the {:s} to your request. More to come soon!'.format(rep.shape[0], similarity_option))
-    CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) #+1 to include self
-    
-    # Get info for similar objects
-    similarity_catalogue = CAT.load_from_catalogue_indices(extra_features=True)
-    similarity_catalogue['similarity'] = CAT.similarity_score
+        # Find index of closest galaxy to search location. This galaxy becomes query
+        CAT.search_catalogue(ra_search, dec_search)
 
-    # Get urls from legacy survey
-    urls = urls_from_coordinates(similarity_catalogue, npix=npix_show)
-    similarity_catalogue['url'] = np.array(urls)
-    
-    # Plot query image
-    lab = 'Query galaxy: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
-    st.subheader(lab)
-    st.image(urls[0], width=350)#use_column_width='auto')
+        # Find indexes of similar galaxies to query
+        st.write('Searching through {:,} galaxies to find the {:s} to your request. More to come soon!'.format(rep.shape[0], similarity_option))
+        CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) #+1 to include self
 
-    st.subheader('Similar Galaxies')
-    
-    # plot rest of images in smaller grid format
-    ncolumns = min(10, int(math.ceil(np.sqrt(num_nearest))))
-    cols = st.beta_columns([1]*ncolumns)
+        # Get info for similar objects
+        similarity_catalogue = CAT.load_from_catalogue_indices(extra_features=True)
+        similarity_catalogue['similarity'] = CAT.similarity_score
 
-    for iurl, url in enumerate(urls[1:num_nearest+1]):
+        # Get urls from legacy survey
+        urls = urls_from_coordinates(similarity_catalogue, npix=npix_show)
+        similarity_catalogue['url'] = np.array(urls)
 
-#           lab = 'ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][iurl+1], similarity_catalogue['dec'][iurl+1])
-           lab = 'Similarity={:.2f}\n'.format(similarity_catalogue['similarity'][iurl+1]) #+ lab
-           if ncolumns > 5:
-               lab = None
-            
-           # add image to grid
-           icol = iurl % ncolumns
-           cols[icol].image(url, caption=lab, use_column_width='always')
+        # Plot query image
+        lab = 'Query galaxy: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
+        st.subheader(lab)
+        st.image(urls[0], width=350)#use_column_width='auto')
+
+        st.subheader('Similar Galaxies')
+
+        # plot rest of images in smaller grid format
+        ncolumns = min(10, int(math.ceil(np.sqrt(num_nearest))))
+        cols = st.beta_columns([1]*ncolumns)
+
+        for iurl, url in enumerate(urls[1:num_nearest+1]):
+
+    #           lab = 'ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][iurl+1], similarity_catalogue['dec'][iurl+1])
+               lab = 'Similarity={:.2f}\n'.format(similarity_catalogue['similarity'][iurl+1]) #+ lab
+               if ncolumns > 5:
+                   lab = None
+
+               # add image to grid
+               icol = iurl % ncolumns
+               cols[icol].image(url, caption=lab, use_column_width='always')
 
 
-    # convert similarity_catalogue to pandas dataframe
-    # split > 1D arrays into 1D columns
-    bands = ['g', 'r', 'z']
+        # convert similarity_catalogue to pandas dataframe
+        # split > 1D arrays into 1D columns
+        bands = ['g', 'r', 'z']
 
-    similarity_catalogue_out = {}
-    for k, v in similarity_catalogue.items():
-        # assume max dimensionality of 2
-        if v.ndim == 2:
-            for iband in range(v.shape[1]):
-                similarity_catalogue_out['{:s}_{:s}'.format(k, bands[iband])] = v[:, iband]
+        similarity_catalogue_out = {}
+        for k, v in similarity_catalogue.items():
+            # assume max dimensionality of 2
+            if v.ndim == 2:
+                for iband in range(v.shape[1]):
+                    similarity_catalogue_out['{:s}_{:s}'.format(k, bands[iband])] = v[:, iband]
 
-        else:
-            similarity_catalogue_out[k] = v
-            
-    df = pd.DataFrame.from_dict(similarity_catalogue_out)
-    #    if st.checkbox('Show data table'):
+            else:
+                similarity_catalogue_out[k] = v
 
-    st.write(df)
+        df = pd.DataFrame.from_dict(similarity_catalogue_out)
+        #    if st.checkbox('Show data table'):
 
-    #    download_csv = st.sidebar.button('Download data table as csv')
-    #    if download_csv:
-    st.markdown(get_table_download_link(df), unsafe_allow_html=True)
-        
-    tend = time.time()
+        st.write(df)
+
+        #    download_csv = st.sidebar.button('Download data table as csv')
+        #    if download_csv:
+        st.markdown(get_table_download_link(df), unsafe_allow_html=True)
+
+        tend = time.time()
 
 
 st.set_page_config(
