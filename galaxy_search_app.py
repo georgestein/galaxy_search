@@ -140,7 +140,7 @@ class Catalogue:
         
         if self.query_distance > far_distance_npix*self.pixel_size:
             # notify of bad query
-            st.write(('\nClosest galaxy in catalogue is quite far away from search point ({:.2f} degrees)\n'
+            st.write(('\nClosest galaxy in catalogue is quite far away from search point ({:.2f} degrees).'
                       'Either this galaxy is not yet in our database, or is not in the DECaLS dr9 footprint!\n'.format(self.query_distance)))
 
         del sep
