@@ -32,7 +32,12 @@ class LoadCatalogue:
             if not os.path.exists(filepath) or check_fullsize:
 
                 fileinfo = os.stat(filepath)
-                if fullsize != fileinfo.st_size:
+                filesize_local = 0
+
+                if os.path.exists(filepath):
+                    filesize_local = fileinfo.st_size:
+
+                if fullsize != filesize_local:
                     lab = "Downloading {:s}... ".format(filepath)
                     if os.path.basename(file_in) == 'representations.npy':
                         lab += 'This one may take a while (up to ~5 mins), please stand by!'
