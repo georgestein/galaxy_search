@@ -51,7 +51,7 @@ class LoadCatalogue:
     # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
-    @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600)#, hash_funcs={dict: lambda _: None})# 
+    # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# 
     def load_catalogue_coordinates(self, extra_features=False,
                                    features_extra=['flux', 'z_phot_median', 'brickid',
                                                    'inds', 'objid', 'source_type', 'ebv']):
@@ -59,6 +59,7 @@ class LoadCatalogue:
 #        if not self.running_local:
 #            st.write('Needs to retreive a few large files the first time you run it - please stand by!')
 
+        print('CATALOGUE')
         self.features_extra = features_extra
 
         full_catalogue = {}
@@ -78,10 +79,10 @@ class LoadCatalogue:
 
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to incorrect dictionary caching? Unclear...
-    @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600)# #(suppress_st_warning=True)
+    # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# #(suppress_st_warning=True)
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
-
+        print('REPRESENTATIONS')
         representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy'), check_fullsize=True, fullsize=1792000128))
 
         return representations
