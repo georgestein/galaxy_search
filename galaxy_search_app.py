@@ -289,7 +289,7 @@ def main():
     # Plot query image
     lab = 'Query galaxy: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
     st.subheader(lab)
-    st.image(urls[0], use_column_width='auto')
+    st.image(urls[0], width=350)#use_column_width='auto')
 
     st.subheader('Similar Galaxies')
     
