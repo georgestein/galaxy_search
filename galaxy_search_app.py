@@ -38,13 +38,13 @@ class LoadCatalogue:
 
             return filepath
             
-    @st.cache(suppress_st_warning=True)
+    @st.cache #(suppress_st_warning=True)
     def load_catalogue_coordinates(self, extra_features=False,
                                    features_extra=['flux', 'z_phot_median', 'brickid',
                                                    'inds', 'objid', 'source_type', 'ebv']):
 
-        if not self.running_local:
-            st.write('Needs to retreive a few large files the first time you run it - please stand by!')
+#        if not self.running_local:
+#            st.write('Needs to retreive a few large files the first time you run it - please stand by!')
 
         self.features_extra = features_extra
 
