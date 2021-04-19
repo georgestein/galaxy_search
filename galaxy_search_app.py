@@ -65,7 +65,9 @@ class LoadCatalogue:
 
         return full_catalogue
 
-    @st.cache(allow_output_mutation=True)
+    # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
+    # cache works on local version, but not when deployed to share.streamlit.io
+    # due to incorrect dictionary caching? Unclear...
     def load_representations(self):
         """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
 
