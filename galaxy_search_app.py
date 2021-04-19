@@ -312,7 +312,7 @@ def main():
         st.subheader(lab)
         st.image(urls[0], width=350)#use_column_width='auto')
 
-        st.subheader('Similar Galaxies')
+        st.subheader('{:s} galaxies'.format(similarity_option.capitalize()))
 
         # plot rest of images in smaller grid format
         ncolumns = min(10, int(math.ceil(np.sqrt(num_nearest))))
