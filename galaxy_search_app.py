@@ -375,6 +375,11 @@ def main():
 
         tend = time.time()
 
+    st.markdown(
+        """
+        Created by [George Stein](https://github.com/georgestein)
+        """)
+
 st.set_page_config(
     page_title='Galaxy Finder',
 ##    page_icon='GEORGE',
