@@ -1,7 +1,9 @@
 # Welcome to Galaxy Finder!
 
 This is an interactive galaxy visualization app using the [streamlit library](https://docs.streamlit.io/en/stable/):
- 
+
+Check out the live version [share.streamlit.io/georgestein/galaxy_search/main/galaxy_search_app.py](https://share.streamlit.io/georgestein/galaxy_search/main/galaxy_search_app.py)
+
 1. You enter the coordinates of your favourite galaxy, or let it select a random one.
 2. It searches for the most similar looking ones in the [DECaLS dr9 dataset](https://www.legacysurvey.org/viewer).
 3. It displays the images and datatables, and gives download links.
