@@ -264,7 +264,9 @@ def main():
     try:
         num_nearest_download = int(num_nearest_download)
     except ValueError:
-        sys.exit("The number of similar galaxies entered is not an integer")
+        err_str = "The number of similar galaxies entered is not an integer"
+        st.write(err_str)
+        sys.exit(err_str)
 
     num_nearest_max = 10000
     if num_nearest_download > num_nearest_max:
