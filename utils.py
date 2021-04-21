@@ -4,8 +4,8 @@ import base64
 import sys
 
 def radec_string_to_degrees(ra_str, dec_str, ra_unit_formats, dec_unit_formats):
-    ra_err_str = "The RA entered is not in the proper form: {:s}".format(ra_unit_formats))
-    dec_err_str = "The Dec entered is not in the proper form: {:s}".format(dec_unit_formats))
+    ra_err_str = "The RA entered is not in the proper form: {:s}".format(ra_unit_formats)
+    dec_err_str = "The Dec entered is not in the proper form: {:s}".format(dec_unit_formats)
 
     if ':' in ra_str:
         # convert from weird astronomer units to useful ones (degrees) 
