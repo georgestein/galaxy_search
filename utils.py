@@ -3,7 +3,6 @@ import base64
 import sys
 
 def radec_string_to_degrees(ra_str, dec_str, ra_unit_formats, dec_unit_formats):
-    print(ra_str, dec_str)
     if ':' in ra_str:
         # convert from weird astronomer units to useful ones (degrees) 
         try:
