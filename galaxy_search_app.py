@@ -332,28 +332,30 @@ def main():
         urls = urls_from_coordinates(similarity_catalogue, npix=npix_show)
         similarity_catalogue['url'] = np.array(urls)
 
-        # Plot query image
-        lab = 'Query galaxy: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
-        st.subheader(lab)
-        st.image(urls[0], width=350)#use_column_width='auto')
+        # Plot query image. Put in center columns to ensure it remains centered
+        lab = 'Query galaxy'#: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
+        cols = st.beta_columns((1, 1.5, 1))
+        cols[1].subheader(lab)
+        cols[1].image(urls[0], use_column_width='always')#use_column_width='auto')
 
         st.subheader('{:s} galaxies'.format(similarity_option.capitalize()))
 
         # plot rest of images in smaller grid format
         ncolumns = min(10, int(math.ceil(np.sqrt(num_nearest))))
-        cols = st.beta_columns([1]*ncolumns)
+        nrows    = int(math.ceil(num_nearest/ncolumns))
+        iimg = 1 # already included first image
+        for irow in range(nrows):
+            cols = st.beta_columns([1]*ncolumns)
+            for icol in range(ncolumns):
+                url = urls[iimg]
 
-        for iurl, url in enumerate(urls[1:num_nearest+1]):
+                lab = 'Similarity={:.2f}\n'.format(similarity_catalogue['similarity'][iimg]) #+ lab
+                if ncolumns > 5:
+                    lab = None
 
-    #           lab = 'ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][iurl+1], similarity_catalogue['dec'][iurl+1])
-               lab = 'Similarity={:.2f}\n'.format(similarity_catalogue['similarity'][iurl+1]) #+ lab
-               if ncolumns > 5:
-                   lab = None
-
-               # add image to grid
-               icol = iurl % ncolumns
-               cols[icol].image(url, caption=lab, use_column_width='always')
-
+                # add image to grid
+                cols[icol].image(url, caption=lab, use_column_width='always')
+                iimg += 1
 
         # convert similarity_catalogue to pandas dataframe
         # split > 1D arrays into 1D columns
@@ -369,8 +371,15 @@ def main():
             else:
                 similarity_catalogue_out[k] = v
 
+
         df = pd.DataFrame.from_dict(similarity_catalogue_out)
-        #    if st.checkbox('Show data table'):
+        #df.insert(2, 'similarity', df.similarity(1))
+
+        # sort columns
+        cols_leading = ['ra', 'dec', 'similarity']
+        cols = cols_leading  + [col for col in df if col not in cols_leading]
+        df = df[cols]
+        
 
         st.write(df.head(num_nearest_vals[-1]))
 
