@@ -1,6 +1,42 @@
 import numpy as np
 import base64
+import sys
 
+def radec_string_to_degrees(ra_str, dec_str, ra_unit_formats, dec_unit_formats):
+    print(ra_str, dec_str)
+    if ':' in ra_str:
+        # convert from weird astronomer units to useful ones (degrees) 
+        try:
+            HH, MM, SS = [float(i) for i in ra_str.split(':')]
+        except ValueError:
+            sys.exit("The RA entered is not in the proper form: {:s}".format(ra_unit_formats))
+
+        ra = 360./24 * (HH + MM/60 + SS/3600)
+
+    else:
+        try:
+            ra = float(ra_str)
+        except ValueError:
+            sys.exit("The RA entered is not in the proper form: {:s}".format(ra_unit_formats))
+
+
+    if ':' in dec_str:
+	# convert from weird astronomer units to useful ones (degrees) 
+        try:
+            DD, MM, SS = [float(i) for i in dec_str.split(':')]
+
+        except ValueError:
+            sys.exit("The Dec entered is not in the proper form: {:s}".format(dec_unit_formats))
+        dec = DD/abs(DD) * (abs(DD) + MM/60 + SS/3600)
+
+    else:
+        try:
+            dec = float(dec_str)
+        except ValueError:
+            sys.exit("The Dec entered is not in the proper form: {:s}".format(dec_unit_formats))
+
+    return ra, dec
+    
 def angular_separation(ra1, dec1, ra2, dec2):
     """Angular separation between two points on a sphere.
     Parameters

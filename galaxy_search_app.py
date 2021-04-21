@@ -206,48 +206,6 @@ def main():
             - Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
             """
         )
-    tstart = time.time()
-
-    #    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
-    #    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
-    
-    ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy (degrees or HH:MM:SS)", value='236.4355')
-    dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy (degrees or DD:MM:SS)", value='20.5603')
-
-    if ':' in ra_search:
-        # convert from weird astronomer units to useful ones (degrees)
-        HH, MM, SS = [float(i) for i in ra_search.split(':')]
-        ra_search = 360./24 * (HH + MM/60 + SS/3600)
-
-    if ':' in dec_search:
-        # convert from weird astronomer units to useful ones (degrees)
-        DD, MM, SS = [float(i) for i in dec_search.split(':')]
-        dec_search = DD/abs(DD) * (abs(DD) + MM/60 + SS/3600)
-
-    ra_search  = float(ra_search)
-    dec_search = float(dec_search)
-
-    similarity_types = ['most similar', 'least similar']
-    similarity_option = st.sidebar.selectbox(
-        'Want to see the most similar galaxies or the least similar?',
-        similarity_types)
-    #similarity_option = st.sidebar.select_slider('Image size (pixels)', similarity_types)
-    
-    #    num_nearest = int(st.sidebar.text_input('Number of similar galaxies to display', key='num_nearest', help='Number of similar galaxies to display. Gets slow with a large number', value='16'))
-
-    num_nearest_vals = [i**2 for i in range(4,11)]
-    num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
-
-    npix_types = [96, 152, 256]
-#    npix_show = st.sidebar.selectbox(
-#        'Image size (pixels)',
-#        npix_types)
-    npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[-1])
-
-    num_nearest_download = int(st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe', value='100'))
-    num_similar_query = max(num_nearest, num_nearest_download)
-
-
     with st.beta_expander('Interested in learning how this works?'):
         st.markdown(
             """
@@ -271,6 +229,51 @@ def main():
         )
 
     st.write("")
+
+
+    tstart = time.time()
+
+    #    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
+    #    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
+
+    ra_unit_formats = 'degrees or HH:MM:SS'
+    dec_unit_formats = 'degrees or DD:MM:SS'
+    ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats), value='236.4355')
+    dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy ({:s})".format(dec_unit_formats), value='20.5603')
+
+    ra_search, dec_search = radec_string_to_degrees(ra_search, dec_search, ra_unit_formats, dec_unit_formats)
+    
+    similarity_types = ['most similar', 'least similar']
+    similarity_option = st.sidebar.selectbox(
+        'Want to see the most similar galaxies or the least similar?',
+        similarity_types)
+    #similarity_option = st.sidebar.select_slider('Image size (pixels)', similarity_types)
+    
+    #    num_nearest = int(st.sidebar.text_input('Number of similar galaxies to display', key='num_nearest', help='Number of similar galaxies to display. Gets slow with a large number', value='16'))
+
+    num_nearest_vals = [i**2 for i in range(4,11)]
+    num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
+
+    npix_types = [96, 152, 256]
+#    npix_show = st.sidebar.selectbox(
+#        'Image size (pixels)',
+#        npix_types)
+    npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[-1])
+
+    num_nearest_download = st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe. Only up to 100 will be displayed. Download the csv to see the full requested number.', value='100')
+    try:
+        num_nearest_download = int(num_nearest_download)
+    except ValueError:
+        sys.exit("The number of similar galaxies entered is not an integer")
+
+    num_nearest_max = 10000
+    if num_nearest_download > num_nearest_max:
+        st.write("{:d} is too many similar galaxies, setting number of galaxies in table to {:d}".format(num_nearest_download, num_nearest_max))
+        num_nearest_download = num_nearest_max
+
+    num_similar_query = max(num_nearest, num_nearest_download)
+
+
     if num_nearest > 100:
         st.write('WARNING: you entered a large number of similar galaxies to display. It may take a while. If it breaks please decrease this number')
  
@@ -367,7 +370,7 @@ def main():
         df = pd.DataFrame.from_dict(similarity_catalogue_out)
         #    if st.checkbox('Show data table'):
 
-        st.write(df)
+        st.write(df.head(num_nearest_vals[-1]))
 
         #    download_csv = st.sidebar.button('Download data table as csv')
         #    if download_csv:
