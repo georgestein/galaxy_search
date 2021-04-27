@@ -4,47 +4,47 @@ import base64
 import sys
 
 def radec_string_to_degrees(ra_str, dec_str, ra_unit_formats, dec_unit_formats):
+    """convert from weird astronomer units to useful ones (degrees)"""
+
     ra_err_str = "The RA entered is not in the proper form: {:s}".format(ra_unit_formats)
     dec_err_str = "The Dec entered is not in the proper form: {:s}".format(dec_unit_formats)
 
     if ':' in ra_str:
-        # convert from weird astronomer units to useful ones (degrees) 
         try:
             HH, MM, SS = [float(i) for i in ra_str.split(':')]
         except ValueError:
             st.write(ra_err_str)
             sys.exit(ra_err_str)
 
-        ra = 360./24 * (HH + MM/60 + SS/3600)
-
-    else:
-        try:
-            ra = float(ra_str)
-        except ValueError:
-            st.write(ra_err_str)
-            sys.exit(ra_err_str)
+        ra_str = 360./24 * (HH + MM/60 + SS/3600)
 
     if ':' in dec_str:
-	# convert from weird astronomer units to useful ones (degrees) 
         try:
             DD, MM, SS = [float(i) for i in dec_str.split(':')]
 
         except ValueError:
             st.write(dec_err_str)
             sys.exit(dec_err_str)
-        dec = DD/abs(DD) * (abs(DD) + MM/60 + SS/3600)
+        dec_str = DD/abs(DD) * (abs(DD) + MM/60 + SS/3600)
 
-    else:
-        try:
-            dec = float(dec_str)
-        except ValueError:
-            st.write(dec_err_str)
-            sys.exit(dec_err_str)
+    try:
+        ra = float(ra_str)
+    except ValueError:
+        st.write(ra_err_str)
+        sys.exit(ra_err_str)
+
+    try:
+        dec = float(dec_str)
+    except ValueError:
+        st.write(dec_err_str)
+        sys.exit(dec_err_str)
 
     return ra, dec
     
 def angular_separation(ra1, dec1, ra2, dec2):
-    """Angular separation between two points on a sphere.
+    """
+    Angular separation between two points on a sphere.
+    
     Parameters
     ----------
     ra1, dec1, ra2, dec2, : ra and dec in degrees
@@ -120,10 +120,12 @@ def calculate_similarity_faiss(rep, query_ind, metric='IP', nnearest=10):
 def calculate_similarity(rep, query_ind, nnearest=10, similarity_inv=False):
     """
     Calculate cosine similarity of query feature vector with all image representations
-    Vectors are normalized, so cosine similarity becomes dot product
+    Vectors are already normalized, so cosine similarity becomes dot product
+
     Parameters
     ----------
-    rep: representations
+    rep: array
+        Image representations
 
     Returns
     -------
@@ -146,7 +148,9 @@ def calculate_similarity(rep, query_ind, nnearest=10, similarity_inv=False):
     return similar_inds, dist
     
 def urls_from_coordinates(catalogue, pixscale=0.262, npix=256):
-    """gets url for image cutout from https://www.legacysurvey.org/ 
+    """
+    gets url for image cutout from https://www.legacysurvey.org/ 
+
     e.g. https://www.legacysurvey.org/viewer/jpeg-cutout?ra=190.1086&dec=1.2005&width=96&layer=dr-9-south&pixscale=0.262&bands=grz
     """
 
@@ -158,11 +162,21 @@ def urls_from_coordinates(catalogue, pixscale=0.262, npix=256):
     return urls
 
 def get_table_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
+    """
+    Generates a link allowing the data in a given panda dataframe to be downloaded
 
-    from https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806/2
+    Parameters
+    ----------
+    df: Pandas dataframe
+
+    Returns
+    -------
+    href string
+
+    Notes
+    -----
+    From https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806/2
+
     """
     csv = df.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here

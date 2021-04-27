@@ -1,200 +1,17 @@
 import streamlit as st
 import numpy as np
-import os
 import sys
 
 import time
 import math
 import pandas as pd
-import urllib
 
 from utils import *
+from catalogue_operations import *
 
-class LoadCatalogue:
-    """Separate loading from catalogue operations to use caching"""
-    def __init__(self, data_loc='data/'):
-
-        self.running_local = os.popen('hostname').read().startswith('Georges-MacBook-Pro')#.local'
-        if self.running_local:
-            self.data_loc = data_loc
-
-        else:
-            self.data_loc = 'https://portal.nersc.gov/project/nyx/decals_self_supervised/streamlit_app_data/data/'
-            self.data_loc_local = 'data/'
-             
-    def get_local_or_url(self, file_in, check_fullsize=False, fullsize=None):
-        """file_in can be either local destination or url"""
-        if self.running_local:
-
-            return file_in
-
-        else:
-            filepath = os.path.join(self.data_loc_local, os.path.basename(file_in)) # take file name from url
-            if not os.path.exists(filepath) or check_fullsize:
-
-                filesize_local = 0
-
-                if os.path.exists(filepath):
-                    fileinfo = os.stat(filepath)
-                    filesize_local = fileinfo.st_size
-
-                if fullsize != filesize_local:
-                    lab = "Downloading {:s}... ".format(filepath)
-                    if os.path.basename(file_in) == 'representations.npy':
-                        lab += 'This one may take a while (up to ~5 mins), please stand by!\nOnce downloaded subsequent runs will be fast'
-
-                    with st.spinner(lab):
-                        urllib.request.urlretrieve(file_in, filepath)
-
-            return filepath
-            
-    # @st.cache(allow_output_mutation=True)# #(suppress_st_warning=True)
-    # cache works on local version, but not when deployed to share.streamlit.io
-    # due to incorrect dictionary caching? Unclear...
-    # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# 
-    def load_catalogue_coordinates(self, extra_features=False,
-                                   features_extra=['flux', 'z_phot_median', 'brickid',
-                                                   'inds', 'objid', 'source_type', 'ebv']):
-
-#        if not self.running_local:
-#            st.write('Needs to retreive a few large files the first time you run it - please stand by!')
-
-        self.features_extra = features_extra
-
-        full_catalogue = {}
-        
-        # always load in ra and dec
-        self.features_radec = ['ra', 'dec']
-        for fstr in self.features_radec:
-            full_catalogue[fstr] = np.load(self.get_local_or_url(os.path.join(self.data_loc, fstr+'.npy')))
-
-        # option to add in additional catalogue features of interest
-        if extra_features:
-            # download files to use later
-            for fstr in self.features_extra:
-                self.get_local_or_url(os.path.join(self.data_loc, fstr+'.npy'))
-
-        return full_catalogue
-
-    # cache works on local version, but not when deployed to share.streamlit.io
-    # due to incorrect dictionary caching? Unclear...
-    # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# #(suppress_st_warning=True)
-    def load_representations(self):
-        """Keep seperate from loading in catalogues, as when representation file starts to get large will need to add in chunked access"""
-        representations = np.load(self.get_local_or_url(os.path.join(self.data_loc, 'representations.npy'), check_fullsize=True, fullsize=224000128))
-
-        return representations
-    
-
-class Catalogue:
-    def __init__(self, full_catalogue, representations,
-                 data_loc='data/'): 
-
-
-        self.full_catalogue = full_catalogue
-        self.representations = representations
-        
-        self.data_loc = data_loc
-        
-        self.pixel_size = 0.262 / 3600 # arcsec to degrees
-    
-
-    def load_from_catalogue_indices(self, inds_load=None, extra_features=True,
-                                    features_extra=['flux', 'z_phot_median', 'brickid',
-                                                    'inds', 'objid', 'source_type', 'ebv']):
-        
-        if inds_load is None:
-            inds_load=self.similar_inds
-            
-        self.features_extra = features_extra
-        
-        similarity_catalogue = {}
-        
-        # always load in ra and dec
-        self.features_radec = ['ra', 'dec']
-        for fstr in self.features_radec:
-            similarity_catalogue[fstr] = np.load(os.path.join(self.data_loc, fstr+'.npy'), mmap_mode='r')[inds_load]
-
-        # option to add in additional catalogue features of interest
-        if extra_features:
-            for fstr in self.features_extra:
-                similarity_catalogue[fstr] = np.load(os.path.join(self.data_loc, fstr+'.npy'), mmap_mode='r')[inds_load]
-
-        return similarity_catalogue   
-    
-    
-    def search_catalogue(self, ra, dec, nnearest=1, far_distance_npix=10):
-        """Return index and ra dec of nearest galaxy to search point (query_ra, query_dec)"""
-        
-        self.search_ra = ra
-        self.search_dec = dec
-      
-        # calculate angular seperation of all objects from query point
-        sep = angular_separation(self.search_ra, self.search_dec, self.full_catalogue['ra'], self.full_catalogue['dec'])
-        
-        self.query_ind = np.argmin(sep)
-        self.query_ra  = self.full_catalogue['ra'][self.query_ind]
-        self.query_dec  = self.full_catalogue['dec'][self.query_ind]
-
-        self.query_distance = sep[self.query_ind]
-        
-        if self.query_distance > far_distance_npix*self.pixel_size:
-            # notify of bad query
-            st.write(('\nClosest galaxy in catalogue is quite far away from search point ({:.2f} degrees).'
-                      ' Either this galaxy is not yet in our database, or is not in the DECaLS dr9 footprint!\n'.format(self.query_distance)))
-
-        del sep
-
-    def similarity_search(self, nnearest=5, min_angular_separation=5, similarity_inv=False):
-        """Return indices and similarity scores to nearest nsimilar data samples.
-        First index returned is the query galaxy
-        
-        Parameters
-        ----------
-        nnearest: number of most similar galaxies to return
-        min_angular_separation: minimum angular seperation of galaxies in pixelsize. Anything below is thrown out
-        similarity_inv: if true returns most similar, if false returns least similar
-        """
-    
-        nnearest_intermediate = int(nnearest*1.5) # some may be thrown out due to angular seperation constraints, so oversample
-        self.similar_inds, self.similarity_score = calculate_similarity(self.representations, self.query_ind, nnearest=nnearest_intermediate, similarity_inv=similarity_inv)
-
-        if similarity_inv:
-            # append query to start of list, as it will no longer be most similar to itself
-            self.similar_inds = np.insert(self.similar_inds, 0, self.query_ind)
-            self.similarity_score = np.insert(self.similarity_score, 0, 1.)
-
-        # now remove galaxies that are suspiciously close to each other on the sky
-        # which happens when individual galaxies in a cluster are included as separate sources in the catalogue
-        ra_similar = self.full_catalogue['ra'][self.similar_inds]
-        dec_similar = self.full_catalogue['dec'][self.similar_inds]
-
-        # all vs all calculation
-        sep = angular_separation(ra_similar[np.newaxis, ...], dec_similar[np.newaxis, ...], ra_similar[..., np.newaxis], dec_similar[..., np.newaxis])
-
-        # compile indices of galaxies too close in angular coordinates
-        inds_del = set()
-        for i in range(sep.shape[0]):
-            inds_cuti = set(np.where(sep[i, (i+1):] < min_angular_separation*self.pixel_size)[0]+(i+1))
-            inds_del  = inds_del | inds_cuti # keep only unique indices
-            
-        # remove duplicate galaxies from similarity arrays
-        inds_del = sorted(inds_del) 
-        self.similar_inds = np.delete(self.similar_inds, inds_del)
-        self.similarity_score = np.delete(self.similarity_score, inds_del)
-
-        self.similar_inds = self.similar_inds[:nnearest]
-        self.similarity_score = self.similarity_score[:nnearest]
-
-        
 def main():
 
     st.title("Welcome to Galaxy Finder")
-    #st.subheader("Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!")
-    #st.write("")
-    #st.write("Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at https://www.legacysurvey.org/viewer")
-    #st.write("Use the south survey (select the <Legacy Surveys DR9-south images> option)")
-    #st.write("Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.")
 
     with st.beta_expander('Instructions'):
         st.markdown(
@@ -227,40 +44,44 @@ def main():
             Created by [George Stein](https://github.com/georgestein)
             """
         )
-
     st.write("")
 
-
-    tstart = time.time()
-
-    #    ra_search = float(st.sidebar.text_input('RA (deg)', key='ra', help='Right Ascension of query galaxy (in degrees)', value='236.4355'))
-    #    dec_search = float(st.sidebar.text_input('Dec (deg)', key='dec', help='Declination of query galaxy (in degrees)', value='20.5603'))
-
+    # Hardcode parameter options
     ra_unit_formats = 'degrees or HH:MM:SS'
     dec_unit_formats = 'degrees or DD:MM:SS'
+
+    similarity_types = ['most similar', 'least similar']
+
+    # choices for number of images to display
+    num_nearest_vals = [i**2 for i in range(4, 11)]
+
+    # maximum number of similar objects allowed in data table
+    num_nearest_max = 10000
+
+    npix_types = [96, 152, 256]
+
+    # don't use galaxies up to this index, as lots can have weird observing errors
+    index_use_min = 2500
+
+    # Read in selected options and run program
+    tstart = time.time()
+
     ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats), value='236.4355')
     dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy ({:s})".format(dec_unit_formats), value='20.5603')
 
     ra_search, dec_search = radec_string_to_degrees(ra_search, dec_search, ra_unit_formats, dec_unit_formats)
     
-    similarity_types = ['most similar', 'least similar']
     similarity_option = st.sidebar.selectbox(
         'Want to see the most similar galaxies or the least similar?',
         similarity_types)
-    #similarity_option = st.sidebar.select_slider('Image size (pixels)', similarity_types)
     
-    #    num_nearest = int(st.sidebar.text_input('Number of similar galaxies to display', key='num_nearest', help='Number of similar galaxies to display. Gets slow with a large number', value='16'))
-
-    num_nearest_vals = [i**2 for i in range(4,11)]
     num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
 
-    npix_types = [96, 152, 256]
-#    npix_show = st.sidebar.selectbox(
-#        'Image size (pixels)',
-#        npix_types)
     npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[-1])
 
     num_nearest_download = st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe. Only up to 100 will be displayed. Download the csv to see the full requested number.', value='100')
+
+    # a few checks a that the user fed in proper variables
     try:
         num_nearest_download = int(num_nearest_download)
     except ValueError:
@@ -268,17 +89,12 @@ def main():
         st.write(err_str)
         sys.exit(err_str)
 
-    num_nearest_max = 10000
     if num_nearest_download > num_nearest_max:
         st.write("{:d} is too many similar galaxies, setting number of galaxies in table to {:d}".format(num_nearest_download, num_nearest_max))
         num_nearest_download = num_nearest_max
 
     num_similar_query = max(num_nearest, num_nearest_download)
 
-
-    if num_nearest > 100:
-        st.write('WARNING: you entered a large number of similar galaxies to display. It may take a while. If it breaks please decrease this number')
- 
     similarity_inv = False
     if similarity_option == 'least similar':
         similarity_inv = True
@@ -286,32 +102,26 @@ def main():
     # load in full datasets needed
     LC = LoadCatalogue()
 
-#    bar_progress = st.empty()
-#    bar = st.progress(0) # add a progress bar
-    
-    cat = LC.load_catalogue_coordinates(extra_features=True)
+    cat = LC.load_catalogue_coordinates(include_extra_features=True)
 
     # st.write('Loaded catalogue info. Now loading representations')
-
     rep = LC.load_representations()
 
-    # st.write('Loaded Representations')
     # Set up class containing search operations
     CAT = Catalogue(cat, rep)
 
     start_search = st.sidebar.button('Search query')
     start_search_random = st.sidebar.button('Search random galaxy')
 
+    # start search when prompted by user
     if start_search or start_search_random:
         if start_search_random:
-            # ind_random = np.random.randint(0, rep.shape[0])
-            # galaxies are sorted by brightness, so earlier ones are more interesting to look at
-            # so sample with this in mind
+            # Galaxies are sorted by brightness, so earlier ones are more interesting to look at
+            # Sample with this in mind by using lognormal distribution
 
-            ind_min = 2500
             ind_max = rep.shape[0]-1
             ind_random = 0
-            while (ind_random < ind_min) or (ind_random > ind_max):
+            while (ind_random < index_use_min) or (ind_random > ind_max):
                 ind_random = int(np.random.lognormal(10., 2.))
 
             ra_search = cat['ra'][ind_random]
@@ -322,28 +132,28 @@ def main():
 
         # Find indexes of similar galaxies to query
         st.write('Searching through {:,} galaxies to find the {:s} to your request. More to come soon!'.format(rep.shape[0], similarity_option))
-        CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) #+1 to include self
+        CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) # +1 to include self
 
         # Get info for similar objects
-        similarity_catalogue = CAT.load_from_catalogue_indices(extra_features=True)
+        similarity_catalogue = CAT.load_from_catalogue_indices(include_extra_features=True)
         similarity_catalogue['similarity'] = CAT.similarity_score
 
         # Get urls from legacy survey
         urls = urls_from_coordinates(similarity_catalogue, npix=npix_show)
         similarity_catalogue['url'] = np.array(urls)
 
-        # Plot query image. Put in center columns to ensure it remains centered
+        # Plot query image. Put in center columns to ensure it remains centered upon display
         lab = 'Query galaxy'#: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
         cols = st.beta_columns((1, 1.5, 1))
         cols[1].subheader(lab)
         cols[1].image(urls[0], use_column_width='always')#use_column_width='auto')
 
+        # plot rest of images in smaller grid format
         st.subheader('{:s} galaxies'.format(similarity_option.capitalize()))
 
-        # plot rest of images in smaller grid format
         ncolumns = min(10, int(math.ceil(np.sqrt(num_nearest))))
         nrows    = int(math.ceil(num_nearest/ncolumns))
-        iimg = 1 # already included first image
+        iimg = 1 # start at 1 as we already included first image above
         for irow in range(nrows):
             cols = st.beta_columns([1]*ncolumns)
             for icol in range(ncolumns):
@@ -357,11 +167,10 @@ def main():
                 cols[icol].image(url, caption=lab, use_column_width='always')
                 iimg += 1
 
-        # convert similarity_catalogue to pandas dataframe
-        # split > 1D arrays into 1D columns
+        # convert similarity_catalogue to pandas dataframe to display and download
         bands = ['g', 'r', 'z']
 
-        similarity_catalogue_out = {}
+        similarity_catalogue_out = {} # split > 1D arrays into 1D columns
         for k, v in similarity_catalogue.items():
             # assume max dimensionality of 2
             if v.ndim == 2:
@@ -373,18 +182,16 @@ def main():
 
 
         df = pd.DataFrame.from_dict(similarity_catalogue_out)
-        #df.insert(2, 'similarity', df.similarity(1))
 
-        # sort columns
+        # Sort columns to lead with the most useful ones
         cols_leading = ['ra', 'dec', 'similarity']
         cols = cols_leading  + [col for col in df if col not in cols_leading]
         df = df[cols]
         
-
+        # display table
         st.write(df.head(num_nearest_vals[-1]))
 
-        #    download_csv = st.sidebar.button('Download data table as csv')
-        #    if download_csv:
+        # show a downloadable link
         st.markdown(get_table_download_link(df), unsafe_allow_html=True)
 
         tend = time.time()
