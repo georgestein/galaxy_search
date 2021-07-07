@@ -11,11 +11,12 @@ class LoadCatalogue:
     def __init__(self, data_loc='data/'):
 
         self.running_local = os.popen('hostname').read().startswith('Georges-MacBook-Pro')#.local'
+        #self.running_local = False
         if self.running_local:
             self.data_loc = data_loc
 
         else:
-            self.data_loc = 'https://portal.nersc.gov/project/nyx/decals_self_supervised/streamlit_app_data/data/'
+            self.data_loc = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data'
             self.data_loc_local = 'data/'
              
     def get_local_or_url(self, file_in, check_fullsize=False, fullsize=None):
@@ -102,7 +103,7 @@ class LoadCatalogue:
 
 class Catalogue:
     """Contains a variety of operations to perform on galaxy catalogue/representation pairs"""
-    def __init__(self, full_catalogue, representations,
+    def __init__(self, full_catalogue, representations=None,
                  data_loc='data/'): 
 
         self.full_catalogue = full_catalogue
@@ -188,8 +189,12 @@ class Catalogue:
         """
     
         nnearest_intermediate = int(nnearest*1.5) # some may be thrown out due to angular seperation constraints, so oversample
-        self.similar_inds, self.similarity_score = calculate_similarity(self.representations, self.query_ind, nnearest=nnearest_intermediate, similarity_inv=similarity_inv)
+        # Calculate similarity on the fly
+        # self.similar_inds, self.similarity_score = calculate_similarity(self.representations, self.query_ind, nnearest=nnearest_intermediate, similarity_inv=similarity_inv)
 
+        # Use precalculated values
+        self.similar_inds, self.similarity_score = retrieve_similarity(self.query_ind)
+        
         if similarity_inv:
             # append query to start of list, as it will no longer be most similar to itself
             self.similar_inds = np.insert(self.similar_inds, 0, self.query_ind)

@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import base64
 import sys
+import os
+from urllib import request
 
 def radec_string_to_degrees(ra_str, dec_str, ra_unit_formats, dec_unit_formats):
     """convert from weird astronomer units to useful ones (degrees)"""
@@ -146,7 +148,40 @@ def calculate_similarity(rep, query_ind, nnearest=10, similarity_inv=False):
     similar_inds = similar_inds[:nnearest]
 
     return similar_inds, dist
+
+def retrieve_similarity(query_ind):
+    """
+    Retreives precalculated similarity indices and distance values 
+    indices and values are saved in binary files of size (sim_chunksize, nnearest)
+    of dtype=np.int32 and np.float32, respectively
+    """
+    sim_chunksize = 10000
+    nnearest = 1000
+    bytes_per_dtype = 4
+
+    url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/small_chunks/' 
+
+    ichunk = query_ind // sim_chunksize
+    print('DEBUG iquery, ichunk', query_ind, ichunk)
+    istart = ichunk*sim_chunksize
+    iend   = (ichunk+1)*sim_chunksize
+
+    url_dist = os.path.join(url_head, 'dist_knearest1000_{:09d}_{:09d}.bin'.format(istart, iend))
+    url_inds = os.path.join(url_head, 'inds_knearest1000_{:09d}_{:09d}.bin'.format(istart, iend))
+
+    query_line = query_ind % sim_chunksize
+
+    skip_bytes = query_line*nnearest*bytes_per_dtype
+    with request.urlopen(request.Request(url_dist, headers={'Range': 'bytes={:d}-'.format(skip_bytes)})) as f:
+         dist = np.frombuffer(f.read(nnearest*bytes_per_dtype), dtype=np.float32)
+     
+    with request.urlopen(request.Request(url_inds, headers={'Range': 'bytes={:d}-'.format(skip_bytes)})) as f:
+         similar_inds = np.frombuffer(f.read(nnearest*bytes_per_dtype), dtype=np.int32)
+
+    print(dist, similar_inds)
     
+    return similar_inds, dist
+
 def urls_from_coordinates(catalogue, pixscale=0.262, npix=256):
     """
     gets url for image cutout from https://www.legacysurvey.org/ 
