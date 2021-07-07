@@ -173,7 +173,7 @@ class Catalogue:
 
         del sep
 
-    def similarity_search(self, nnearest=5, min_angular_separation=5, similarity_inv=False):
+    def similarity_search(self, nnearest=5, min_angular_separation=96, similarity_inv=False):
         """
         Return indices and similarity scores to nearest nnearest data samples.
         First index returned is the query galaxy.
