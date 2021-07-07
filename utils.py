@@ -162,7 +162,7 @@ def retrieve_similarity(query_ind):
     url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/small_chunks/' 
 
     ichunk = query_ind // sim_chunksize
-    print('DEBUG iquery, ichunk', query_ind, ichunk)
+
     istart = ichunk*sim_chunksize
     iend   = (ichunk+1)*sim_chunksize
 
@@ -178,8 +178,6 @@ def retrieve_similarity(query_ind):
     with request.urlopen(request.Request(url_inds, headers={'Range': 'bytes={:d}-'.format(skip_bytes)})) as f:
          similar_inds = np.frombuffer(f.read(nnearest*bytes_per_dtype), dtype=np.int32)
 
-    print(dist, similar_inds)
-    
     return similar_inds, dist
 
 def urls_from_coordinates(catalogue, pixscale=0.262, npix=256):
