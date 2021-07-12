@@ -159,7 +159,7 @@ def retrieve_similarity(query_ind):
     nnearest = 1000
     bytes_per_dtype = 4
 
-    url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/small_chunks/' 
+    url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/8hour_south_torgb/small_chunks/' 
 
     ichunk = query_ind // sim_chunksize
 
