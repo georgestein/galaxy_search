@@ -9,8 +9,8 @@ import pandas as pd
 from utils import *
 from catalogue_operations import *
 
-from count_sessions import count_sessions
-count_sessions()
+#from count_sessions import count_sessions
+#count_sessions()
 def main():
 
     st.title("Welcome to Galaxy Finder")
