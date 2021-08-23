@@ -15,7 +15,7 @@ def main():
 
     st.title("Welcome to Galaxy Finder")
 
-    with st.beta_expander('Instructions'):
+    with st.expander('Instructions'):
         st.markdown(
             """
             **Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!**
@@ -25,7 +25,7 @@ def main():
             - Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
             """
         )
-    with st.beta_expander('Interested in learning how this works?'):
+    with st.expander('Interested in learning how this works?'):
         st.markdown(
             """
             A bit about the method:
