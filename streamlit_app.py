@@ -151,7 +151,7 @@ def main():
 
         # Plot query image. Put in center columns to ensure it remains centered upon display
         lab = 'Query galaxy'#: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
-        cols = st.beta_columns((1, 1.5, 1))
+        cols = st.columns((1, 1.5, 1))
         cols[1].subheader(lab)
         cols[1].image(urls[0], use_column_width='always')#use_column_width='auto')
 
@@ -162,7 +162,7 @@ def main():
         nrows    = int(math.ceil(num_nearest/ncolumns))
         iimg = 1 # start at 1 as we already included first image above
         for irow in range(nrows):
-            cols = st.beta_columns([1]*ncolumns)
+            cols = st.columns([1]*ncolumns)
             for icol in range(ncolumns):
                 url = urls[iimg]
 
