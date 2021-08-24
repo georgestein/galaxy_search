@@ -187,7 +187,8 @@ def main():
             else:
                 similarity_catalogue_out[k] = v
 
-
+        # convert format of source_type, else does not show properly in table
+        similarity_catalogue_out['source_type'] = similarity_catalogue_out['source_type'].astype('str')
         df = pd.DataFrame.from_dict(similarity_catalogue_out)
 
         # Sort columns to lead with the most useful ones
