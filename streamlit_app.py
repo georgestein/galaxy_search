@@ -11,6 +11,7 @@ from catalogue_operations import *
 
 #from count_sessions import count_sessions
 #count_sessions()
+
 def main():
 
     st.title("Welcome to Galaxy Finder")
@@ -22,7 +23,7 @@ def main():
             
             Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at [legacysurvey.org](https://www.legacysurvey.org/viewer)
             - Use the south survey (select the <Legacy Surveys DR9-south images> option). Currently not all galaxies are included, but most bright ones should be.
-            - Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
+            - Please note products here are not final, and are updated regularly.
             """
         )
     with st.expander('Interested in learning how this works?'):
@@ -38,7 +39,7 @@ def main():
             - Please see our [paper](https://arxiv.org/abs/2012.13083) or [website](https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/) for more details on the method.
 
             What data we used:
-            - We used galaxy images from [DECaLS dr9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
+            - We used galaxy images from [DECaLS DR9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
             - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
 
             Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
@@ -67,6 +68,8 @@ def main():
 
     # Read in selected options and run program
     tstart = time.time()
+
+    st.sidebar.markdown('### Set up and submit your query!')
 
     ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats), value='236.4355')
     dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy ({:s})".format(dec_unit_formats), value='20.5603')
@@ -137,7 +140,7 @@ def main():
         CAT.search_catalogue(ra_search, dec_search)
 
         # Find indexes of similar galaxies to query
-        st.write('Searching through the brightest {:,} galaxies in the DECaLS survey to find the most similar to your request. More to come soon!'.format(ngals_tot))
+        #st.write('Searching through the brightest {:,} galaxies in the DECaLS survey to find the most similar to your request. More to come soon!'.format(ngals_tot))
 
         CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) # +1 to include self
 
