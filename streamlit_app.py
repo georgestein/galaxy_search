@@ -82,7 +82,7 @@ def main():
     
     num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
 
-    npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[-1])
+    npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[1])
 
     
     #num_nearest_download = st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe. Only up to 100 will be displayed. Download the csv to see the full requested number.', value='100')
@@ -133,12 +133,14 @@ def main():
                 #ind_random = int(np.random.lognormal(10., 2.)) # strongly biased towards bright galaxies
                 ind_random = int(np.random.lognormal(12., 3.)) # biased towards bright galaxies
 
+            print('DEBUG ind_random = ', ind_random)
             ra_search = cat['ra'][ind_random]
             dec_search = cat['dec'][ind_random]
 
         # Find index of closest galaxy to search location. This galaxy becomes query
         CAT.search_catalogue(ra_search, dec_search)
 
+        print('index = ', CAT.query_ind)
         # Find indexes of similar galaxies to query
         #st.write('Searching through the brightest {:,} galaxies in the DECaLS survey to find the most similar to your request. More to come soon!'.format(ngals_tot))
 

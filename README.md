@@ -2,7 +2,7 @@
 
 This is an interactive galaxy visualization app using the [streamlit library](https://docs.streamlit.io/en/stable/):
 
-Check out the live version [share.streamlit.io/georgestein/galaxy_search](https://share.streamlit.io/georgestein/galaxy_search/main/galaxy_search_app.py)
+**Check out the live version [share.streamlit.io/georgestein/galaxy_search](https://share.streamlit.io/georgestein/galaxy_search/main/galaxy_search_app.py)**
 
 1. You enter the coordinates of your favourite galaxy, or let it select a random one.
 2. It searches for the most similar looking ones in the [DECaLS dr9 dataset](https://www.legacysurvey.org/viewer).
@@ -26,7 +26,7 @@ Check out the live version [share.streamlit.io/georgestein/galaxy_search](https:
 - Products here are just initial trials for fun. We are working hard to create better models!
 
 What data we used:
-- We used galaxy images from DECaLS dr9 https://www.legacysurvey.org/, randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
+- We used galaxy images from DECaLS DR9 https://www.legacysurvey.org/, randomly sampling 3.5 million galaxies to train the machine learning model. We then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20, so most bright things in the sky should be included, with very dim and small objects likely missing - more to come soon!
 
 Updates will come periodically as we add more data and train better models
 

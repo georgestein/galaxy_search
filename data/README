@@ -1,3 +1,5 @@
-using south_train for now
+Using all 42,272,646 DR9 south galaxies with z-band magnitude < 20.
 
-representations are L2 normalized
+Representations are L2 normalized before similarity is computed.
+
+Data is located at https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/.

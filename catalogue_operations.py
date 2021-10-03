@@ -11,7 +11,7 @@ class LoadCatalogue:
     def __init__(self, data_loc='data/'):
 
         self.running_local = os.popen('hostname').read().startswith('Georges-MacBook-Pro')#.local'
-        #self.running_local = False
+        self.running_local = False
         if self.running_local:
             self.data_loc = data_loc
 
