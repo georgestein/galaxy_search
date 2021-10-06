@@ -13,50 +13,62 @@ from catalogue_operations import *
 #count_sessions()
 
 def main():
-
-    header_col1, header_col2 = st.columns((1,1))
-
-    with header_col1:
-        st.title("Welcome to Galaxy Finder")
-        st.markdown(
-            """
-            Created by [George Stein](https://github.com/georgestein)
-            """)
-
-    with header_col2:
-        with st.expander('Instructions'):
-            st.markdown(
-                """
-                **Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!**
-                
-                Click the 'search random galaxy' on the left for a new galaxy, or try finding a cool galaxy at [legacysurvey.org](https://www.legacysurvey.org/viewer)
-                - Use the south survey (select the <Legacy Surveys DR9-south images> option). Currently not all galaxies are included, but most bright ones should be.
-                - Please note products here are not final, and are updated regularly.
-                """
-            )
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+        width: 250px;
+    }
+        [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+        width: 250px;
+        margin-left: -250px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     
-        with st.expander('Interested in learning how this works?'):
-                st.markdown(
-                    """
-                    A bit about the method:
-                    - The `similarity' of two images is quite easy to judge by eye - but writing an algorithm to do the same is not as easy as one might think! This is because we can easily identify and understand what object is in the image.
-                    - A machine is different - it simply looks individual pixel values. Yet two images that to us have very similar properties and appearences will likely have vastly different pixel values. For example, imagine rotating a galaxy image by 90 degrees. It it obviously still the same galaxy, but the pixel values have completeley changed. 
-                    - So we first need to teach a computer to understand what is actually in the image on a deeper level than just looking at pixel values. 
-                    - To do this we used a type of machine learning called "self-supervised representation learning" to boil down each image into a concentrated vector of information, or `representation', that encapsulates the appearance and properties of the galaxy. 
-                    - For each galaxy image we create new versions by rotating it, adding noise, blurring it, etc., and we teach the machine to learn the same representation for all these versions of the same galaxy. In this way, we move beyond looking at pixel values, and teach the machine a deeper understanding of the image.
-                    - Once we have trained the machine learning model on millions of galaxies we calculate and save the representation of every image. Then, you tell us what galaxy to use as a starting point, we find the representation belonging to the image of that galaxy, compare it to millions of other representations from all the other galaxies, and return the most similar images!
-                    - Please see our [paper](https://arxiv.org/abs/2012.13083) or [website](https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/) for more details on the method.
-                    
-                    What data we used:
-                    - We used galaxy images from [DECaLS DR9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
-                    - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
-                    
-                    Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
-                    
-                    Created by [George Stein](https://github.com/georgestein)
-                    """
-                )
-                st.write("")
+    header_cols = st.columns((1))
+    header_cols[0].title("Welcome to Galaxy Finder")
+    header_cols[0].markdown(
+        """
+        Created by [George Stein](https://github.com/georgestein)
+        """)
+    
+    display_method = header_cols[-1].button('Interested in learning how this works?')
+    if display_method:
+        describe_method()
+    else:
+        galaxy_search()
+
+        
+def describe_method():
+    st.button('Back to Galaxy Finder')
+    
+    st.markdown(
+        """
+        A bit about the method:
+        - The similarity of two images is quite easy to judge by eye - but writing an algorithm to do the same is not as easy as one might think! This is because we can easily identify and understand what object is in the image.
+        - A machine is different - it simply looks individual pixel values. Yet two images that to us have very similar properties and appearences will likely have vastly different pixel values. For example, imagine rotating a galaxy image by 90 degrees. It it obviously still the same galaxy, but the pixel values have completeley changed. 
+        - So we first need to teach a computer to understand what is actually in the image on a deeper level than just looking at pixel values. 
+        - To do this we used a type of machine learning called "self-supervised representation learning" to boil down each image into a concentrated vector of information, or `representation', that encapsulates the appearance and properties of the galaxy. 
+        - For each galaxy image we create new versions by rotating it, adding noise, blurring it, etc., and we teach the machine to learn the same representation for all these versions of the same galaxy. In this way, we move beyond looking at pixel values, and teach the machine a deeper understanding of the image.
+        - Once we have trained the machine learning model on millions of galaxies we calculate and save the representation of every image. Then, you tell us what galaxy to use as a starting point, we find the representation belonging to the image of that galaxy, compare it to millions of other representations from all the other galaxies, and return the most similar images!
+        - Please see our [paper](https://arxiv.org/abs/2110.00023) or [website](https://portal.nersc.gov/project/dasrepo/self-supervised-learning-sdss/) for more details on the method.
+        
+        What data we used:
+        - We used galaxy images from [DECaLS DR9](https://www.legacysurvey.org/), randomly sampling 3.5 million galaxies to train the machine learning model. We can then apply it on every galaxy in the dataset, about 42 million galaxies with z-band magnitude < 20. Right now we have included only the 3.5 Million galaxies we trained it on. Most bright things in the sky should be included, with some dimmer and smaller objects missing - more to come soon!
+        - The models were trained using images of size 96 pixels by 96 pixels centered on the galaxy. So features outside of this central region are not used to calculate the similarity, but are sometimes noce to look at
+        
+        Please note products here are just initial trials, with small models that fit within the memory limits of streamlit.
+        
+        Created by [George Stein](https://github.com/georgestein)
+        """
+    )
+    st.button('Back to Galaxy Finder', key='galaxies')  # will change state and hence trigger rerun and hence reset should_tell_me_more
+
+    
+def galaxy_search():
 
     # Hardcode parameter options
     ra_unit_formats = 'degrees or HH:MM:SS'
@@ -78,7 +90,16 @@ def main():
     # Read in selected options and run program
     tstart = time.time()
 
-    st.sidebar.markdown('### Set up and submit your query!')
+    with st.sidebar.expander('Instructions'):
+        st.markdown(
+                """
+                **Enter the coordinates of your favourite galaxy and we'll search for the most similar looking ones in the universe!**
+                
+                Click the 'search random galaxy' button, or try finding a cool galaxy at [legacysurvey.org](https://www.legacysurvey.org/viewer)
+                - Use the south survey (select the <Legacy Surveys DR9-south images> option). Currently not all galaxies are included, but most bright ones should be.
+                """
+            )
+    #st.sidebar.markdown('### Set up and submit your query!')
 
     ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats), value='236.4355')
     dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy ({:s})".format(dec_unit_formats), value='20.5603')
