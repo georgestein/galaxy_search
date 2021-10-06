@@ -58,8 +58,8 @@ class LoadCatalogue:
     # due to small memory allowance. Do not use for now
     # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# 
     def load_catalogue_coordinates(self, include_extra_features=True,
-                                   extra_features=['flux', 'z_phot_median', 'brickid',
-                                                   'inds', 'objid', 'source_type', 'ebv']):
+                                   extra_features=['mag', 'photometric_redshift',
+                                                   'source_type']):
         """
         Return dictionary containing galaxy catalogue information.
 
@@ -115,8 +115,8 @@ class Catalogue:
     
 
     def load_from_catalogue_indices(self, inds_load=None, include_extra_features=True,
-                                    extra_features=['flux', 'z_phot_median', 'brickid',
-                                                    'inds', 'objid', 'source_type', 'ebv']):
+                                    extra_features=['mag', 'photometric_redshift',
+                                                    'source_type']):
         """
         Return dictionary containing galaxy catalogue information for desired indices.
 
@@ -129,7 +129,11 @@ class Catalogue:
         extra_features : list of strings
             The extra features to include
         """
-
+        source_type_dict = {0: 'DEV',
+                            1: 'EXP',
+                            2: 'REX',
+                            3: 'SER'}
+        
         if inds_load is None:
             inds_load=self.similar_inds
             
@@ -147,6 +151,9 @@ class Catalogue:
         if include_extra_features:
             for fstr in self.extra_features:
                 similarity_catalogue[fstr] = np.load(os.path.join(self.data_loc, fstr+file_type), mmap_mode='r')[inds_load]
+                
+                if fstr=='source_type': # map from bytes to string
+                    similarity_catalogue[fstr] = np.array([source_type_dict[i] for i in similarity_catalogue[fstr]])
 
         return similarity_catalogue   
     
