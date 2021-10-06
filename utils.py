@@ -151,8 +151,9 @@ def calculate_similarity(rep, query_ind, nnearest=10, similarity_inv=False):
 
 def retrieve_similarity(query_ind):
     """
-    Retreives precalculated similarity indices and distance values 
-    indices and values are saved in binary files of size (sim_chunksize, nnearest)
+    Retreives precalculated similarity indices and distance values. 
+
+    Indices and values are saved in binary files of size (sim_chunksize, nnearest),
     of dtype=np.int32 and np.float32, respectively
     """
     sim_chunksize = 10000
@@ -160,7 +161,6 @@ def retrieve_similarity(query_ind):
     bytes_per_dtype = 4
 
     url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/8hour_south_torgb/small_chunks/'
-    #url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/8hour_south/small_chunks/' 
 
     ichunk = query_ind // sim_chunksize
 
@@ -171,7 +171,6 @@ def retrieve_similarity(query_ind):
     url_dist = os.path.join(url_head, 'dist_knearest1000_{:09d}_{:09d}.bin'.format(istart, iend))
     url_inds = os.path.join(url_head, 'inds_knearest1000_{:09d}_{:09d}.bin'.format(istart, iend))
 
-    print(url_dist, url_inds)
     query_line = query_ind % sim_chunksize
 
     skip_bytes = query_line*nnearest*bytes_per_dtype

@@ -108,9 +108,10 @@ def main():
 
     # load in full datasets needed
     LC = LoadCatalogue()
+    cat = LC.download_catalogue_files(include_extra_features=True)
 
-    cat = LC.load_catalogue_coordinates(include_extra_features=True)
-    ngals_tot = cat['ra'].shape[0]
+    #cat = LC.load_catalogue_coordinates(include_extra_features=True)
+    ngals_tot = cat['ngals_tot']
     # st.write('Loaded catalogue info. Now loading representations')
     #rep = LC.load_representations()
 
@@ -133,14 +134,15 @@ def main():
                 #ind_random = int(np.random.lognormal(10., 2.)) # strongly biased towards bright galaxies
                 ind_random = int(np.random.lognormal(12., 3.)) # biased towards bright galaxies
 
-            print('DEBUG ind_random = ', ind_random)
-            ra_search = cat['ra'][ind_random]
-            dec_search = cat['dec'][ind_random]
+            radec_random = CAT.load_from_catalogue_indices(include_extra_features=False,
+                                                           inds_load=[ind_random])
+            ra_search = radec_random['ra'][0]
+            dec_search = radec_random['dec'][0]
 
         # Find index of closest galaxy to search location. This galaxy becomes query
         CAT.search_catalogue(ra_search, dec_search)
 
-        print('index = ', CAT.query_ind)
+        print('Galaxy index used= ', CAT.query_ind)
         # Find indexes of similar galaxies to query
         #st.write('Searching through the brightest {:,} galaxies in the DECaLS survey to find the most similar to your request. More to come soon!'.format(ngals_tot))
 

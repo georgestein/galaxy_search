@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import urllib
+import math
 
 from utils import *
 
@@ -57,6 +58,40 @@ class LoadCatalogue:
     # cache works on local version, but not when deployed to share.streamlit.io
     # due to small memory allowance. Do not use for now
     # @st.cache(persist=True, max_entries=1, allow_output_mutation=True, ttl=3600, hash_funcs={dict: lambda _: None})# 
+    def download_catalogue_files(self, include_extra_features=True, file_ext='.npy',
+                                   extra_features=['mag', 'photometric_redshift',
+                                                   'source_type']):
+        """
+        Download relevant catalogue files to local host 
+
+        Parameters
+        ----------
+        include_extra_features : bool
+            Whether or not to include additional catalogue info beyond sky location
+        extra_features : list of strings
+            The extra features to include
+        """
+
+        self.extra_features = extra_features
+        full_catalogue = {}
+
+
+        # always load in ra and dec
+        self.features_radec = ['ra', 'dec']
+        for fstr in self.features_radec:
+            self.get_local_or_url(os.path.join(self.data_loc, fstr+file_ext))
+            if fstr =='ra':
+                full_catalogue['ngals_tot'] = np.load(self.get_local_or_url(os.path.join(self.data_loc, fstr+file_ext)), mmap_mode='r').shape[0]
+
+        # add in additional catalogue features of interest
+        if include_extra_features:
+            # download files to use later, as don't actually need this info yet
+            for fstr in self.extra_features:
+                self.get_local_or_url(os.path.join(self.data_loc, fstr+file_ext))
+
+        return full_catalogue
+
+
     def load_catalogue_coordinates(self, include_extra_features=True,
                                    extra_features=['mag', 'photometric_redshift',
                                                    'source_type']):
@@ -104,13 +139,13 @@ class LoadCatalogue:
 class Catalogue:
     """Contains a variety of operations to perform on galaxy catalogue/representation pairs"""
     def __init__(self, full_catalogue, representations=None,
-                 data_loc='data/'): 
+                 data_loc='data/', file_ext='.npy'): 
 
         self.full_catalogue = full_catalogue
         self.representations = representations
         
         self.data_loc = data_loc
-        
+        self.file_ext = '.npy'
         self.pixel_size = 0.262 / 3600 # arcsec to degrees
     
 
@@ -165,13 +200,29 @@ class Catalogue:
         self.search_dec = dec
       
         # calculate angular seperation of all objects from query point
-        sep = angular_separation(self.search_ra, self.search_dec, self.full_catalogue['ra'], self.full_catalogue['dec'])
-        
-        self.query_ind = np.argmin(sep)
-        self.query_ra  = self.full_catalogue['ra'][self.query_ind]
-        self.query_dec  = self.full_catalogue['dec'][self.query_ind]
+        # perform in chunks, as streamlit app does not have large memory
+        # and concurrent users will crash the ram allocation
+        min_sep = 1e9
+        chunksize = 1000000
+        nchunks = math.ceil(self.full_catalogue['ngals_tot']/chunksize)
+        for ichunk in range(nchunks):
+            istart = ichunk*chunksize
+            iend   = (ichunk+1)*chunksize
 
-        self.query_distance = sep[self.query_ind]
+            rai = np.load(os.path.join(self.data_loc, 'ra'+self.file_ext), mmap_mode='r')[istart:iend]
+            deci = np.load(os.path.join(self.data_loc, 'dec'+self.file_ext), mmap_mode='r')[istart:iend]
+                 
+            sep = angular_separation(self.search_ra, self.search_dec, rai, deci)
+
+            min_sep_i = np.min(sep)
+            if min_sep_i < min_sep:
+                 query_ind = np.argmin(sep) 
+                 self.query_distance = sep[query_ind]
+                 self.query_ra  = rai[query_ind]
+                 self.query_dec = deci[query_ind]
+                 self.query_ind = query_ind + istart
+                 min_sep = min_sep_i
+                 
 
         if self.query_distance > far_distance_npix*self.pixel_size:
             # notify of bad query
@@ -208,11 +259,13 @@ class Catalogue:
 
         # now remove galaxies that are suspiciously close to each other on the sky
         # which happens when individual galaxies in a cluster are included as separate sources in the catalogue
-        ra_similar = self.full_catalogue['ra'][self.similar_inds]
-        dec_similar = self.full_catalogue['dec'][self.similar_inds]
+        similarity_dict = self.load_from_catalogue_indices(include_extra_features=False, inds_load = self.similar_inds)
 
         # all vs all calculation
-        sep = angular_separation(ra_similar[np.newaxis, ...], dec_similar[np.newaxis, ...], ra_similar[..., np.newaxis], dec_similar[..., np.newaxis])
+        sep = angular_separation(similarity_dict['ra'][np.newaxis, ...],
+                                 similarity_dict['dec'][np.newaxis, ...],
+                                 similarity_dict['ra'][..., np.newaxis],
+                                 similarity_dict['dec'][..., np.newaxis])
 
         # compile indices of galaxies too close in angular coordinates
         inds_del = set()
