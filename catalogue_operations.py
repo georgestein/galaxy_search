@@ -259,7 +259,8 @@ class Catalogue:
 
         # now remove galaxies that are suspiciously close to each other on the sky
         # which happens when individual galaxies in a cluster are included as separate sources in the catalogue
-        similarity_dict = self.load_from_catalogue_indices(include_extra_features=False, inds_load = self.similar_inds)
+        similarity_dict = self.load_from_catalogue_indices(include_extra_features=False,
+                                                           inds_load=self.similar_inds)
 
         # all vs all calculation
         sep = angular_separation(similarity_dict['ra'][np.newaxis, ...],
