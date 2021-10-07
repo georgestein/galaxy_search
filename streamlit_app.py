@@ -101,8 +101,12 @@ def galaxy_search():
             )
     #st.sidebar.markdown('### Set up and submit your query!')
 
-    ra_search = st.sidebar.text_input('RA', key='ra', help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats), value='236.4355')
-    dec_search = st.sidebar.text_input('Dec', key='dec', help="Declination of query galaxy ({:s})".format(dec_unit_formats), value='20.5603')
+    ra_search = st.sidebar.text_input('RA', key='ra',
+                                      help="Right Ascension of query galaxy ({:s})".format(ra_unit_formats),
+                                      value='199.3324') 
+    dec_search = st.sidebar.text_input('Dec', key='dec',
+                                       help="Declination of query galaxy ({:s})".format(dec_unit_formats),
+                                       value='20.6382')
 
     ra_search, dec_search = radec_string_to_degrees(ra_search, dec_search, ra_unit_formats, dec_unit_formats)
     
@@ -113,44 +117,26 @@ def galaxy_search():
     num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
 
     npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[1])
-
     
-    #num_nearest_download = st.sidebar.text_input('Number of similar galaxies to put in table', key='num_nearest_download', help='Number of similar galaxies to put in dataframe. Only up to 100 will be displayed. Download the csv to see the full requested number.', value='100')
-
-    # a few checks a that the user fed in proper variables
-    #try:
-    #    num_nearest_download = int(num_nearest_download)
-    #except ValueError:
-    #    err_str = "The number of similar galaxies entered is not an integer"
-    #    st.write(err_str)
-    #    sys.exit(err_str)
-
-    #if num_nearest_download > num_nearest_max:
-    #    st.write("{:d} is too many similar galaxies, setting number of galaxies in table to {:d}".format(num_nearest_download, num_nearest_max))
-    #num_nearest_download = num_nearest_max
-
-    #num_similar_query = max(num_nearest, num_nearest_download)
     num_similar_query = 1000
 
     similarity_inv = False
     #if similarity_option == 'least similar':
     #    similarity_inv = True
 
-    # load in full datasets needed
+    start_search = st.sidebar.button('Search query')
+    start_search_random = st.sidebar.button('Search random galaxy')
+
+        # load in full datasets needed
     LC = LoadCatalogue()
     cat = LC.download_catalogue_files(include_extra_features=True)
 
     #cat = LC.load_catalogue_coordinates(include_extra_features=True)
     ngals_tot = cat['ngals_tot']
-    # st.write('Loaded catalogue info. Now loading representations')
-    #rep = LC.load_representations()
 
     # Set up class containing search operations
-    # CAT = Catalogue(cat, rep)
     CAT = Catalogue(cat)
 
-    start_search = st.sidebar.button('Search query')
-    start_search_random = st.sidebar.button('Search random galaxy')
 
     # start search when prompted by user
     if start_search or start_search_random:
@@ -191,13 +177,16 @@ def galaxy_search():
         ncolumns = min(11, int(math.ceil(np.sqrt(num_nearest))))
         nrows    = int(math.ceil(num_nearest/ncolumns))
 
-        lab = 'Query galaxy'#: ra, dec = ({:.3f}, {:.3f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
+        lab = 'Query galaxy'
+        lab_radec = 'RA, Dec = ({:.4f}, {:.4f})'.format(similarity_catalogue['ra'][0], similarity_catalogue['dec'][0])
         cols = st.columns([2]+[1*ncolumns])
         cols[0].subheader(lab)
         cols[1].subheader('Most similar galaxies')
         
         cols = st.columns([2]+[1]*ncolumns)
-        cols[0].image(urls[0], use_column_width='always')#use_column_width='auto')
+        cols[0].image(urls[0],
+                      use_column_width='always',
+                      caption=lab_radec)#use_column_width='auto')
         # plot rest of images in smaller grid format
 
 
