@@ -32,7 +32,7 @@ def main():
     header_cols[0].title("Welcome to Galaxy Finder")
     header_cols[0].markdown(
         """
-        Created by [George Stein](https://github.com/georgestein)
+        Created by [George Stein](https://georgestein.github.io/)
         """)
     
     display_method = header_cols[-1].button('Interested in learning how this works?')
