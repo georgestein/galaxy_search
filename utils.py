@@ -149,7 +149,7 @@ def calculate_similarity(rep, query_ind, nnearest=10, similarity_inv=False):
 
     return similar_inds, dist
 
-def retrieve_similarity(query_ind):
+def retrieve_similarity(query_ind, model_version='v1'):
     """
     Retreives precalculated similarity indices and distance values. 
 
@@ -160,7 +160,12 @@ def retrieve_similarity(query_ind):
     nnearest = 1000
     bytes_per_dtype = 4
 
-    url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/8hour_south_torgb/small_chunks/'
+    if model_version=='v1':
+        model_string = '8hour_south'
+    if model_version=='v2':
+        model_string = '8hour_south_torgb'
+        
+    url_head = 'https://portal.nersc.gov/project/cusp/ssl_galaxy_surveys/galaxy_search/data/similarity_arrays/{:s}/small_chunks/'.format(model_string)
 
     ichunk = query_ind // sim_chunksize
 

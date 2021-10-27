@@ -84,6 +84,8 @@ def galaxy_search():
 
     npix_types = [96, 152, 256]
 
+    model_versions = ['v1', 'v2']
+    
     # don't use galaxies up to this index, as lots can have weird observing errors
     index_use_min = 2500
 
@@ -117,6 +119,8 @@ def galaxy_search():
     num_nearest = st.sidebar.select_slider('Number of similar galaxies to display', num_nearest_vals)
 
     npix_show = st.sidebar.select_slider('Image size (pixels)', npix_types, value=npix_types[1])
+
+    model_version = st.sidebar.select_slider('Model version', model_versions, value=model_versions[-1])
     
     num_similar_query = 1000
 
@@ -162,7 +166,9 @@ def galaxy_search():
         # Find indexes of similar galaxies to query
         #st.write('Searching through the brightest {:,} galaxies in the DECaLS survey to find the most similar to your request. More to come soon!'.format(ngals_tot))
 
-        CAT.similarity_search(nnearest=num_similar_query+1, similarity_inv=similarity_inv) # +1 to include self
+        CAT.similarity_search(nnearest=num_similar_query+1,
+                              similarity_inv=similarity_inv,
+                              model_version=model_version) # +1 to include self
 
         # Get info for similar objects
         similarity_catalogue = CAT.load_from_catalogue_indices(include_extra_features=True)

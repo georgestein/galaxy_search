@@ -230,7 +230,8 @@ class Catalogue:
 
         del sep
 
-    def similarity_search(self, nnearest=5, min_angular_separation=96, similarity_inv=False):
+    def similarity_search(self, nnearest=5, min_angular_separation=96,
+                          similarity_inv=False, model_version='v1'):
         """
         Return indices and similarity scores to nearest nnearest data samples.
         First index returned is the query galaxy.
@@ -250,7 +251,8 @@ class Catalogue:
         # self.similar_inds, self.similarity_score = calculate_similarity(self.representations, self.query_ind, nnearest=nnearest_intermediate, similarity_inv=similarity_inv)
 
         # Use precalculated values
-        self.similar_inds, self.similarity_score = retrieve_similarity(self.query_ind)
+        self.similar_inds, self.similarity_score = retrieve_similarity(self.query_ind,
+                                                                       model_version=model_version)
         
         if similarity_inv:
             # append query to start of list, as it will no longer be most similar to itself
