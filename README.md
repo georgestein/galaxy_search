@@ -2,7 +2,7 @@
 
 This is an interactive galaxy visualization app using the [streamlit library](https://docs.streamlit.io/en/stable/):
 
-**Check out the live version [share.streamlit.io/georgestein/galaxy_search](https://share.streamlit.io/georgestein/galaxy_search/main/galaxy_search_app.py)**
+**Check out the live version [share.streamlit.io/georgestein/galaxy_search](https://share.streamlit.io/georgestein/galaxy_search)**
 
 1. You enter the coordinates of your favourite galaxy, or let it select a random one.
 2. It searches for the most similar looking ones in the [DECaLS dr9 dataset](https://www.legacysurvey.org/viewer).
