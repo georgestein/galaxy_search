@@ -4,6 +4,9 @@ This is an interactive galaxy visualization app using the [streamlit library](ht
 
 ### Check out the live version here: [share.streamlit.io/georgestein/galaxy_search](https://share.streamlit.io/georgestein/galaxy_search)
 
+### Or find the training codes and data here: [github.com/georgestein/ssl-legacysurvey](https://github.com/georgestein/ssl-legacysurvey)
+
+
 How to interact with this app:
 
 1. Enter the coordinates of your favourite galaxy, or let it select a random one for you.
